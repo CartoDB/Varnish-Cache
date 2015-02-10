@@ -1,0 +1,44 @@
+Source: varnish
+Section: web
+Priority: optional
+Maintainer: Varnish Package Maintainers <pkg-varnish-devel@lists.alioth.debian.org>
+Uploaders: Stig Sandbeck Mathisen <ssm@debian.org>,
+ Lars Bahner <bahner@debian.org>,
+ Tollef Fog Heen <tfheen@debian.org>
+Build-Depends: debhelper (>= 7.0.50~), autotools-dev, automake1.9, libtool,
+ autoconf, libncurses-dev, xsltproc, groff-base, libpcre3-dev,
+ pkg-config, tcl8.5 | tclsh, python-docutils
+Vcs-Browser: http://git.debian.org/?p=pkg-varnish/pkg-varnish.git;a=summary
+Vcs-Git: git://git.debian.org/pkg-varnish/pkg-varnish.git
+Homepage: http://varnish-cache.org/
+Standards-Version: 3.9.1
+
+Package: varnish
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libvarnish1 (= ${binary:Version}), gcc ( >= 3.3), libc6-dev | libc6.1-dev | libc-dev, adduser
+Description: a state-of-the-art, high-performance HTTP accelerator
+ Varnish is a state-of-the-art, high-performance HTTP accelerator.  It uses the
+ advanced features in Linux 2.6, FreeBSD 6/7 and Solaris 10 to achieve its high
+ performance.
+ .
+ Some of the features include:
+  * A modern design
+  * VCL - a very flexible configuration language
+  * Load balancing with health checking of backends
+  * Partial support for ESI - Edge Side Includes
+  * URL rewriting
+  * Graceful handling of "dead" backends
+
+Package: libvarnish1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: shared libraries for Varnish
+ Shared libraries for the Varnish HTTP accelerator.
+
+Package: libvarnish-dev
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libvarnish1 (= ${binary:Version})
+Description: development files for Varnish
+ Development files for the Varnish HTTP accelerator.

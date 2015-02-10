@@ -1,0 +1,57 @@
+#!/usr/bin/make -f
+
+DH_VERBOSE=1
+
+# List of architectures that lack the *_2POW definitions in varnish,
+# which is needed by jemalloc
+DISABLE_JEMALLOC_ARCH_LIST := :hppa:s390:sparc:m68k:
+
+# List of architectures (or buildds) that fail "make test" for some
+# reason or another
+DISABLE_TEST_ARCH_LIST := :armel:hppa:ia64:mipsel:sh4:sparc:
+
+# Explicitly initialize a variable to select architecture, unless it has been
+# defined before.  This is compared against the DISABLE_*_LIST variables later
+# in this makefile
+DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+
+# Set local state dir for FHS
+LOCAL_CONFIGURE_FLAGS = --localstatedir=/var/lib
+
+ifneq (,$(findstring :$(DEB_HOST_ARCH):,$(DISABLE_JEMALLOC_ARCH_LIST)))
+LOCAL_CONFIGURE_FLAGS += --disable-jemalloc
+endif
+
+# Main build rule, leave everything to debhelper
+%:
+	dh $@
+
+# Disable build tests for some architectures
+ifneq (,$(findstring :$(DEB_HOST_ARCH):,$(DISABLE_TEST_ARCH_LIST)))
+override_dh_auto_test:
+	@echo "dh_auto_test disabled on $(DEB_HOST_ARCH)"
+endif
+
+# Override to add local configure flags
+override_dh_auto_configure:
+	$(CURDIR)/autogen.sh
+	dh_auto_configure -- $(LOCAL_CONFIGURE_FLAGS)
+
+# Override to rewrite default.vcl
+override_dh_auto_install:
+	dh_auto_install -a
+	sed -i '/backend default {/,/}/ s/^#[[:space:]]//'  \
+		$(CURDIR)/debian/tmp/etc/varnish/default.vcl
+
+# Override to add the "reload-vcl" script
+override_dh_install:
+	dh_install -a
+	install -o root -g root -m 755 \
+		$(CURDIR)/debian/reload-vcl \
+		$(CURDIR)/debian/varnish/usr/share/varnish/reload-vcl
+
+# Override to add several init scripts
+override_dh_installinit:
+	dh_installinit -a -R
+	dh_installinit --name=varnishlog
+	dh_installinit --name=varnishncsa
